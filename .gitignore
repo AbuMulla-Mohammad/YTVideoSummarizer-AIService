@@ -1,0 +1,66 @@
+# Byte-compiled / optimized / compiled files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.eggs/
+
+# Distribution / build outputs
+dist/
+build/
+*.whl
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+# Add other common virtual environment names if you use them, e.g., .conda, .direnv
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+*.swp
+*.bak
+*.swo
+*~
+.DS_Store # macOS specific
+Thumbs.db # Windows specific
+
+# Logs and temporary files
+*.log
+*.tmp
+tmp/
+logs/
+
+# Database files
+*.sqlite3
+db.sqlite3
+
+# Environment variables
+.env
+.flaskenv
+
+# Test results
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Jupyter Notebook files
+.ipynb_checkpoints/
+
+# PyInstaller / Nuitka
+# These files are often generated during the build process
+# and should not be committed.
+*.spec
+build/
+dist/
+
+# MyPy
+.mypy_cache/
+
+# Coverage
+.coverage
+.coverage.*

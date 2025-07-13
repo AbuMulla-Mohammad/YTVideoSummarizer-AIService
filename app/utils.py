@@ -30,3 +30,15 @@ async def get_video_transcript(video_url: str):
     
     except Exception as e:
         return {"error": str(e)} 
+
+async def convert_transcript_to_text(transcript:dict)->str:
+    try:
+        lines = []
+        for entry in transcript:
+            start = entry["start"]
+            end = entry["start"] + entry["duration"]
+            text = entry["text"]
+            lines.append(f"[{start:.2f} - {end:.2f}] {text}")
+        return "\n".join(lines)
+    except Exception as e:
+        return {"error": str(e)}

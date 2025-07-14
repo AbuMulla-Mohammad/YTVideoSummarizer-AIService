@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.utils import extract_video_id,get_video_transcript,convert_transcript_to_text
-from app.models.youtube_models import VideoIDResponse, TranscriptRequest
+from app.models.youtube_models import VideoIDResponse, TranscriptRequest, TranscriptTextResponse
 
 router = APIRouter()
 @router.post("/get_video_id",response_model=VideoIDResponse)
@@ -19,7 +19,10 @@ async def fetch_transcript(request: TranscriptRequest):
     return {"transcript": transcript}    
 
 @router.post("/convert_transcript_text_endpoint")
-async def convert_transcript_text_endpoint(request: TranscriptRequest):
+async def convert_transcript_text_endpoint(request: TranscriptRequest,response_model=TranscriptTextResponse):
+    video_id= extract_video_id(request.video_url)
+    if "error" in video_id: 
+        raise HTTPException(status_code=400, detail=video_id["error"])
     transcript=await get_video_transcript(request.video_url)
     
     if "error" in transcript:
@@ -27,4 +30,4 @@ async def convert_transcript_text_endpoint(request: TranscriptRequest):
     text= await convert_transcript_to_text(transcript)
     if "error" in text:
         raise HTTPException(status_code=400, detail=text["error"])  
-    return {"text": text}
+    return TranscriptTextResponse(video_id=video_id, text=text)

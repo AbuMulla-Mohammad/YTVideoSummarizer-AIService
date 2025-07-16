@@ -1,4 +1,5 @@
 from pytube import extract
+from pytube.exceptions import RegexMatchError, VideoUnavailable, PytubeError
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import (
     TranscriptsDisabled,
@@ -9,8 +10,14 @@ def extract_video_id(url:str)->str:
     try:
         yt_id=extract.video_id(url)
         return yt_id
-    except Exception as e:
-        return{"error":str(e)}
+    except RegexMatchError:
+        return {"error": "Invalid YouTube URL."}
+    except VideoUnavailable:
+        return {"error": "Video is unavailable."}
+    except PytubeError:
+        return {"error": "Failed to process video data."}
+    except Exception:
+        return {"error": "Unknown error occurred."}
 
 async def get_video_transcript(video_url: str):
     try:

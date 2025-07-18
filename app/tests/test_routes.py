@@ -78,6 +78,7 @@ def test_convert_transcript_to_text(mock_extract_video_id, mock_get_video_transc
     mock_convert_transcript_to_text.assert_called_once_with(mock_get_video_transcript.return_value)
 
 
+@pytest.mark.integration
 def test_full_flow_real(client):
     url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
     response = client.post("/api/convert_transcript_text_endpoint", json={"video_url": url})

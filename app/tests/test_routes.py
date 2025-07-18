@@ -64,7 +64,7 @@ def test_convert_transcript_to_text(mock_extract_video_id, mock_get_video_transc
     mock_get_video_transcript.return_value = [
         {"text": "hello", "start": 0, "duration": 2}
     ]
-    mock_convert_transcript_to_text.return_value = "[0.00 - 2.00] hello"
+    mock_convert_transcript_to_text.return_value = {"text": "[0.00 - 2.00] hello"}
     
     response = client.post("/api/convert_transcript_text_endpoint", json={"video_url": "https://youtu.be/abc123XYZ89"})
     

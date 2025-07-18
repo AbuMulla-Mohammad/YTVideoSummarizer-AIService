@@ -30,4 +30,4 @@ async def convert_transcript_text_endpoint(request: TranscriptRequest,response_m
     text= await convert_transcript_to_text(transcript)
     if "error" in text:
         raise HTTPException(status_code=400, detail=text["error"])  
-    return TranscriptTextResponse(video_id=video_id, text=text)
+    return TranscriptTextResponse(video_id=video_id, text=text["text"])

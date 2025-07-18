@@ -133,7 +133,7 @@ async def test_convert_transcript_to_text_success():
 
     expected_output = "[0.00 - 2.50] Hello world\n[2.50 - 5.50] This is a test"
     result = await convert_transcript_to_text(transcript)
-    assert result == expected_output
+    assert result["text"] == expected_output
 
 
 @pytest.mark.asyncio

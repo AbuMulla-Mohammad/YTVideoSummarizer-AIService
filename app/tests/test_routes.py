@@ -1,6 +1,6 @@
 import pytest
 from fastapi import HTTPException
-from unittest.mock import patch
+from unittest.mock import patch,AsyncMock
 from fastapi.testclient import TestClient
 
 
@@ -85,3 +85,90 @@ def test_full_flow_real(client):
     assert response.status_code == 200
     assert "video_id" in response.json()
     assert "text" in response.json()
+
+
+default_payload={
+    "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "prompt_type": "friendly_summary_with_emojis_and_ideas_explenation",
+    "text_with_timestamp": None,
+    "model": "command-a-03-2025"
+}
+
+@patch("app.api.routes.get_video_transcript", new_callable=AsyncMock)
+@patch("app.api.routes.convert_transcript_to_text", new_callable=AsyncMock)
+@patch("app.api.routes.summarize_format_transcript")
+@patch("app.api.routes.extract_video_id")
+def test_successful_summary(mock_extract, mock_summarize, mock_convert, mock_transcript,client):
+    mock_extract.return_value = "dQw4w9WgXcQ"
+    mock_transcript.return_value = {"text": "This is a transcript."}
+    mock_convert.return_value = {"text": "Converted transcript text."}
+    mock_summarize.return_value = {
+        "summary_sections": [{"title": "Intro", "summary": "Hello world"}],
+        "formatted_transcript": []
+    }
+
+    response = client.post("/api/summarize_format_transcript", json=default_payload)
+    assert response.status_code == 200
+    assert "summary_sections" in response.json()
+    assert "formatted_transcript" in response.json()
+
+
+@patch("app.api.routes.extract_video_id")
+def test_invalid_video_url(mock_extract, client):
+    mock_extract.return_value = {"error": "Invalid YouTube URL."}
+    response = client.post("/api/summarize_format_transcript", json=default_payload)
+    assert response.status_code == 400
+    assert "Invalid YouTube URL." in response.text
+
+
+@patch("app.api.routes.extract_video_id")
+@patch("app.api.routes.get_video_transcript", new_callable=AsyncMock)
+def test_transcript_error(mock_transcript, mock_extract, client):
+    mock_extract.return_value = "dQw4w9WgXcQ"
+    mock_transcript.return_value = {"error": "Transcripts are disabled for this video."}
+    response = client.post("/api/summarize_format_transcript", json=default_payload)
+    assert response.status_code == 400
+    assert "Transcripts are disabled for this video." in response.text
+
+
+@patch("app.api.routes.extract_video_id")
+@patch("app.api.routes.get_video_transcript", new_callable=AsyncMock)
+@patch("app.api.routes.convert_transcript_to_text", new_callable=AsyncMock)
+def test_text_conversion_error(mock_convert, mock_transcript, mock_extract, client):
+    mock_extract.return_value = "dQw4w9WgXcQ"
+    mock_transcript.return_value = {"text": "Transcript OK"}
+    mock_convert.return_value = {"error": "Failed to convert transcript"}
+    response = client.post("/api/summarize_format_transcript", json=default_payload)
+    assert response.status_code == 400
+    assert "Failed to convert transcript" in response.text
+
+
+@patch("app.api.routes.extract_video_id")
+@patch("app.api.routes.get_video_transcript", new_callable=AsyncMock)
+@patch("app.api.routes.convert_transcript_to_text", new_callable=AsyncMock)
+@patch("app.api.routes.summarize_format_text")
+def test_summarize_function_error(mock_summarize, mock_convert, mock_transcript, mock_extract, client):
+    mock_extract.return_value = "dQw4w9WgXcQ"
+    mock_transcript.return_value = {"text": "Transcript OK"}
+    mock_convert.return_value = {"text": "Converted text"}
+    mock_summarize.return_value = {"error": "Summarization failed"}
+    response = client.post("/api/summarize_format_transcript", json=default_payload)
+    assert response.status_code == 400
+    assert "Summarization failed" in response.text
+
+
+def test_invalid_prompt_type(client):
+    payload = default_payload.copy()
+    payload["prompt_type"] = "invalid_prompt_type"
+    response = client.post("/api/summarize_format_transcript", json=payload)
+    assert response.status_code == 400
+    assert "Invalid prompt type" in response.text
+
+
+@pytest.mark.integration
+def test_summarize_format_transcript_real(client):
+    url = "https://www.youtube.com/watch?v=P0Fk-K2eZF8"
+    response = client.post("/api/summarize_format_transcript", json={"video_url": url})
+    assert response.status_code == 200
+    assert "summary_sections" in response.json()
+    assert "formatted_transcript" in response.json()

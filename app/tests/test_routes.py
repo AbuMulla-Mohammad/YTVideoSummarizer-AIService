@@ -157,12 +157,21 @@ def test_summarize_function_error(mock_summarize, mock_convert, mock_transcript,
     assert "Summarization failed" in response.text
 
 
-def test_invalid_prompt_type(client):
+@patch("app.api.routes.extract_video_id")
+@patch("app.api.routes.get_video_transcript", new_callable=AsyncMock)
+@patch("app.api.routes.convert_transcript_to_text", new_callable=AsyncMock)
+def test_invalid_prompt_type(mock_convert, mock_transcript, mock_extract, client):
     payload = default_payload.copy()
     payload["prompt_type"] = "invalid_prompt_type"
+
+    mock_extract.return_value = "fake_id"
+    mock_transcript.return_value = {"text": "Transcript OK"}
+    mock_convert.return_value = {"text": "Converted OK"}
+
     response = client.post("/api/summarize_format_transcript", json=payload)
+
     assert response.status_code == 400
-    assert "Invalid prompt type" in response.text
+    assert "Invalid prompt type: invalid_prompt_type" in response.text
 
 
 @pytest.mark.integration

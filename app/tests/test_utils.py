@@ -1,13 +1,14 @@
 import pytest
 from .test_data import youtube_url_formats
-from unittest.mock import patch
+from unittest.mock import patch,MagicMock
 from youtube_transcript_api._errors import (
     TranscriptsDisabled,
     NoTranscriptFound,
     VideoUnavailable,
 )
-from app.utils import get_video_transcript,convert_transcript_to_text,extract_video_id
-
+from app.utils import get_video_transcript,convert_transcript_to_text,extract_video_id,summarize_format_text
+from app.models.ai_result_models import VideoSummaryTranscriptResponse
+import json
 
 @pytest.mark.parametrize("url, expected_video_id", youtube_url_formats)
 def test_extract_video_id(url, expected_video_id):
@@ -146,3 +147,78 @@ async def test_convert_transcript_to_text_error():
     assert isinstance(result, dict)
     assert "error" in result
     assert "start" in result["error"]  
+
+
+@pytest.fixture
+def mock_response_dict():
+    return {
+        "summary_sections": [
+            {
+                "title": "📌 Important Idea",
+                "summary": "This is a friendly summary 😊",
+                "start": 0.0,
+                "end": 10.0
+            }
+        ],
+        "formatted_transcript": [
+            {
+                "title": "💡 Main Thought",
+                "text": "Some explanation without timestamps.",
+                "start": 0.0,
+                "end": 10.0
+            }
+        ]
+    }
+
+
+@patch("app.utils.co.chat")
+def test_summarize_format_text_success(mock_chat,mock_response_dict):
+    mock_chat.return_value.message.content = mock_response_dict
+    
+    result = summarize_format_text("Hello [0.0 - 10.0] World")
+    assert isinstance(result, VideoSummaryTranscriptResponse)
+    assert result.summary_sections[0].title == "📌 Important Idea"
+    assert result.formatted_transcript[0].title == "💡 Main Thought"
+
+@patch("app.utils.co.chat")
+def test_summarize_format_text_with_json_string(mock_chat, mock_response_dict):
+    json_content = json.dumps(mock_response_dict)
+    mock_chat.return_value.message.content = json_content
+
+    result = summarize_format_text("Hello [0.0 - 10.0] World")
+
+    assert isinstance(result, VideoSummaryTranscriptResponse)
+    assert result.summary_sections[0].summary == "This is a friendly summary 😊"
+
+
+@patch("app.utils.co.chat")
+def test_summarize_format_text_with_list_wrapped_text(mock_chat, mock_response_dict):
+    # Simulate response: a list with one element that has a `.text` attribute
+    message_mock = MagicMock()
+    message_mock.text = json.dumps(mock_response_dict)
+    mock_chat.return_value.message.content = [message_mock]
+
+    result = summarize_format_text("Hello [0.0 - 10.0] World")
+
+    assert isinstance(result, VideoSummaryTranscriptResponse)
+    assert result.formatted_transcript[0].text == "Some explanation without timestamps."
+
+
+@patch("app.utils.co.chat")
+def test_summarize_format_text_with_invalid_format(mock_chat):
+    # Simulate an unexpected format
+    mock_chat.return_value.message.content = 12345
+
+    result = summarize_format_text("Hello [0.0 - 10.0] World")
+    assert isinstance(result, dict)
+    assert "error" in result
+
+
+@patch("app.utils.co.chat")
+def test_summarize_format_text_with_exception(mock_chat):
+    # Simulate an exception
+    mock_chat.side_effect = RuntimeError("API failure")
+
+    result = summarize_format_text("Hello [0.0 - 10.0] World")
+    assert isinstance(result, dict)
+    assert result["error"] == "API failure"

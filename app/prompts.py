@@ -62,8 +62,7 @@ Your task is to extract structured information and return a JSON object with **t
 1. formatted_transcript:  
 An array of objects, where each object represents a **natural paragraph or coherent thought unit** formed by grouping one or more adjacent sentences together.  
 
-Each object should contain:  
-- `title`: A short descriptive title summarizing the paragraph's main idea  
+Each object should contain:   
 - `text`: The full concatenated sentences of the paragraph **without the timestamps**  
 - `start`: The earliest start time (float) among all sentences in this paragraph  
 - `end`: The latest end time (float) among all sentences in this paragraph  
@@ -106,12 +105,7 @@ Your task is to extract structured information and return a JSON object with **t
 An array of objects, where each object represents a **natural paragraph or coherent thought unit** formed by grouping one or more adjacent sentences together.  
 
 Each object should contain:  
-- `title`: A short descriptive title summarizing the paragraph's main idea. Use a friendly tone and relevant emojis to make it more engaging and clear.  
-- `text`: The full concatenated sentences of the paragraph **without the timestamps**.  
-  - Rewrite or lightly paraphrase if needed to improve clarity and flow.  
-  - Explain the ideas in a simple and friendly way, as if you're talking to a friend.  
-  - Highlight the main points clearly, and include short examples or analogies where appropriate.  
-  - Use emojis to make it easier to scan and more fun to read.  
+- `text`: The full concatenated sentences of the paragraph **without the timestamps**.
 - `start`: The earliest start time (float) among all sentences in this paragraph  
 - `end`: The latest end time (float) among all sentences in this paragraph  
 

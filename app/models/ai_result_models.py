@@ -9,7 +9,7 @@ class SummarySectionResponse(BaseModel):
 
 
 class FormatedTranscriptResponse(BaseModel):
-    title: str
+    # title: str
     text: str
     start: float
     end: float

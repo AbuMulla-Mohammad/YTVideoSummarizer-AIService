@@ -162,7 +162,6 @@ def mock_response_dict():
         ],
         "formatted_transcript": [
             {
-                "title": "💡 Main Thought",
                 "text": "Some explanation without timestamps.",
                 "start": 0.0,
                 "end": 10.0
@@ -178,7 +177,7 @@ def test_summarize_format_text_success(mock_chat,mock_response_dict):
     result = summarize_format_text("Hello [0.0 - 10.0] World")
     assert isinstance(result, VideoSummaryTranscriptResponse)
     assert result.summary_sections[0].title == "📌 Important Idea"
-    assert result.formatted_transcript[0].title == "💡 Main Thought"
+    assert result.formatted_transcript[0].text == "Some explanation without timestamps."
 
 @patch("app.utils.co.chat")
 def test_summarize_format_text_with_json_string(mock_chat, mock_response_dict):

@@ -16,7 +16,6 @@ Your task is to:
 
 2. Format the full transcript (without summarizing) into the same sections, using the same idea-based division.
    For each section, provide:
-   - "title": same as the summary section title (string).
    - "text": the original sentences in that section, cleaned and formatted (string).
    - "start": start time of the first sentence (float).
    - "end": end time of the last sentence (float).
@@ -34,7 +33,6 @@ Your task is to:
   ],
   "formatted_transcript": [
     {
-      "title": "string",
       "text": "string",
       "start": float,
       "end": float

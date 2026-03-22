@@ -64,3 +64,4 @@ dist/
 # Coverage
 .coverage
 .coverage.*
+.vs/
